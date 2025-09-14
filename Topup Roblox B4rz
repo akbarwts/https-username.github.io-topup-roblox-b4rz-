@@ -1,0 +1,217 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>TopUp Roblox B4rz</title>
+  <style>
+    :root{--bg:#0f1724;--card:#0b1220;--accent:#06b6d4;--muted:#94a3b8}
+    *{box-sizing:border-box;font-family:Inter,ui-sans-serif,system-ui,Arial}
+    body{margin:0;background:linear-gradient(180deg,#071025 0%,var(--bg) 100%);color:#e6eef6}
+    .container{max-width:980px;margin:28px auto;padding:18px}
+    header{display:flex;align-items:center;gap:16px}
+    .brand{display:flex;flex-direction:column}
+    h1{margin:0;font-size:20px}
+    p.lead{margin:0;color:var(--muted);font-size:13px}
+
+    .grid{display:grid;grid-template-columns:1fr 360px;gap:18px;margin-top:18px}
+    .card{background:linear-gradient(180deg,rgba(255,255,255,0.02),transparent);padding:16px;border-radius:12px;box-shadow:0 6px 18px rgba(2,6,23,0.6)}
+    .products{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
+    .product{padding:12px;border-radius:10px;background:rgba(255,255,255,0.02);cursor:pointer}
+    .product:hover{transform:translateY(-4px);transition:all .15s}
+    .product .title{font-weight:600}
+    .price{font-weight:700;margin-top:8px}
+    .muted{color:var(--muted);font-size:13px}
+
+    .cart-item{display:flex;justify-content:space-between;gap:8px;padding:8px 0;border-bottom:1px dashed rgba(255,255,255,0.03)}
+    .btn{display:inline-block;background:var(--accent);color:#022; padding:8px 12px;border-radius:8px;font-weight:700;text-decoration:none}
+    .btn.ghost{background:transparent;border:1px solid rgba(255,255,255,0.06);color:var(--muted);font-weight:600}
+    label{display:block;font-size:13px;margin-top:10px;color:var(--muted)}
+    input,select{width:100%;padding:10px;border-radius:8px;border:1px solid rgba(255,255,255,0.04);background:transparent;color:inherit}
+    .small{font-size:12px;color:var(--muted)}
+
+    @media (max-width:900px){.grid{grid-template-columns:1fr}.products{grid-template-columns:1fr}.container{padding:12px}}
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <div style="width:52px;height:52px;border-radius:10px;background:linear-gradient(135deg,var(--accent),#06d6a0);display:flex;align-items:center;justify-content:center;font-weight:800;color:#012">RB</div>
+      <div class="brand">
+        <h1>TopUp Roblox B4rz</h1>
+        <p class="lead">Website topup Robux sederhana (frontend only). Simpan data sementara di browser.</p>
+      </div>
+    </header>
+
+    <div class="grid">
+      <div class="card">
+        <h3>Paket Robux</h3>
+        <p class="small">Pilih paket lalu klik "Tambah ke Keranjang".</p>
+        <div id="products" class="products" style="margin-top:12px"></div>
+
+        <div style="margin-top:14px;display:flex;gap:8px;align-items:center">
+          <button class="btn" id="clearStorage">Reset Local Demo</button>
+          <button class="btn ghost" id="loadSample">Load Sample Data</button>
+        </div>
+      </div>
+
+      <aside class="card">
+        <h3>Keranjang</h3>
+        <div id="cartList" style="margin-top:8px"></div>
+        <div style="margin-top:10px;display:flex;justify-content:space-between;align-items:center">
+          <div class="muted">Total:</div>
+          <div id="totalPrice" style="font-weight:800">Rp0</div>
+        </div>
+
+        <hr style="margin:12px 0;border:none;border-top:1px dashed rgba(255,255,255,0.03)">
+
+        <h4>Informasi Topup</h4>
+        <label>Produk</label>
+        <input id="fieldProduct" placeholder="Contoh: Robux Roblox" readonly />
+
+        <label>User ID Roblox</label>
+        <input id="fieldUID" placeholder="Masukkan User ID Roblox" />
+
+        <label>Nama Pemesan</label>
+        <input id="fieldName" placeholder="Nama kamu" />
+
+        <label>Nomor WA / Telepon</label>
+        <input id="fieldPhone" placeholder="08xxxxxxxx" />
+
+        <label>Metode Pembayaran</label>
+        <select id="fieldPay">
+          <option value="manual">Transfer Manual (Demo)</option>
+          <option value="va">Virtual Account (Demo)</option>
+          <option value="gopay">E-Wallet (Demo)</option>
+        </select>
+
+        <div style="margin-top:12px;display:flex;gap:8px">
+          <button class="btn" id="checkoutBtn">Proses Topup</button>
+          <button class="btn ghost" id="emptyCart">Kosongkan</button>
+        </div>
+
+        <p class="small" style="margin-top:8px">Catatan: ini demo frontend. Integrasikan ke backend / payment gateway untuk produksi.</p>
+      </aside>
+    </div>
+
+    <footer style="margin-top:18px;text-align:center;color:var(--muted);font-size:13px">Demo dibuat untuk tujuan pengembangan — tidak melakukan transaksi nyata.</footer>
+  </div>
+
+  <script>
+    // --- Sample Robux product data ---
+    const sampleProducts = [
+      {id: 'rbx-80', title: 'Robux 80', price: 15000, desc: '80 Robux Roblox'},
+      {id: 'rbx-400', title: 'Robux 400', price: 75000, desc: '400 Robux Roblox'},
+      {id: 'rbx-800', title: 'Robux 800', price: 140000, desc: '800 Robux Roblox'},
+      {id: 'rbx-1700', title: 'Robux 1700', price: 280000, desc: '1700 Robux Roblox'},
+    ];
+
+    const rupiah = (n) => {
+      return 'Rp' + n.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.')
+    }
+
+    const STORAGE_KEY = 'topup_roblox_b4rz_state_v1';
+    let state = {products: [], cart: []};
+
+    function saveState(){ localStorage.setItem(STORAGE_KEY, JSON.stringify(state)) }
+    function loadState(){
+      try{
+        const raw = localStorage.getItem(STORAGE_KEY);
+        if(raw) state = JSON.parse(raw)
+        else state.products = sampleProducts.slice();
+      }catch(e){ state.products = sampleProducts.slice() }
+    }
+
+    function renderProducts(){
+      const wrap = document.getElementById('products'); wrap.innerHTML = '';
+      state.products.forEach(p => {
+        const el = document.createElement('div'); el.className='product';
+        el.innerHTML = `<div class='title'>${p.title}</div><div class='muted'>${p.desc}</div><div class='price'>${rupiah(p.price)}</div><div style='margin-top:8px'><button class='btn' data-id='${p.id}'>Tambah ke Keranjang</button></div>`;
+        wrap.appendChild(el)
+      })
+      document.querySelectorAll('.product .btn').forEach(b=>b.addEventListener('click',()=>{
+        addToCart(b.dataset.id)
+      }))
+    }
+
+    function renderCart(){
+      const list = document.getElementById('cartList'); list.innerHTML = '';
+      if(state.cart.length===0){ list.innerHTML = '<div class="muted">Keranjang kosong</div>'; document.getElementById('fieldProduct').value=''; }
+      else{
+        state.cart.forEach((c, idx)=>{
+          const row = document.createElement('div'); row.className='cart-item';
+          row.innerHTML = `<div><div style="font-weight:700">${c.title}</div><div class='small'>${c.desc}</div></div><div style='text-align:right'><div>${rupiah(c.price)}</div><div style='margin-top:6px'><button class='btn ghost' data-idx='${idx}'>Hapus</button></div></div>`;
+          list.appendChild(row)
+        })
+        document.querySelectorAll('.btn.ghost[data-idx]').forEach(b=>b.addEventListener('click',()=>{
+          removeFromCart(parseInt(b.dataset.idx))
+        }))
+        document.getElementById('fieldProduct').value = state.cart.map(c=>c.title).join(' + ')
+      }
+      document.getElementById('totalPrice').innerText = rupiah(state.cart.reduce((s,i)=>s+i.price,0))
+    }
+
+    function addToCart(productId){
+      const p = state.products.find(x=>x.id===productId); if(!p) return;
+      state.cart.push(Object.assign({},p)); saveState(); renderCart();
+      toast('Berhasil ditambahkan ke keranjang')
+    }
+
+    function removeFromCart(idx){ state.cart.splice(idx,1); saveState(); renderCart(); }
+
+    function emptyCart(){ state.cart = []; saveState(); renderCart(); }
+
+    function checkout(){
+      if(state.cart.length===0){ toast('Keranjang kosong — pilih paket dulu'); return }
+      const uid = document.getElementById('fieldUID').value.trim();
+      const name = document.getElementById('fieldName').value.trim();
+      const phone = document.getElementById('fieldPhone').value.trim();
+      if(!uid || !name || !phone){ toast('Lengkapi User ID, Nama, dan Nomor telepon'); return }
+
+      const order = {
+        orderId: 'ORD' + Date.now(),
+        items: state.cart,
+        total: state.cart.reduce((s,i)=>s+i.price,0),
+        uid, name, phone, method: document.getElementById('fieldPay').value
+      }
+
+      console.log('Order payload (simulate send to server):', order)
+      toast('Pesanan dibuat: ' + order.orderId)
+
+      state.cart = [];
+      saveState(); renderCart();
+
+      setTimeout(()=>{
+        alert('Order sukses!\nOrder ID: ' + order.orderId + '\nTotal: ' + rupiah(order.total) + '\nSilakan ikuti instruksi pembayaran (demo).')
+      },200)
+    }
+
+    function toast(msg){
+      const el = document.createElement('div'); el.innerText = msg; el.style.cssText='position:fixed;right:18px;bottom:18px;padding:10px 14px;border-radius:10px;background:rgba(0,0,0,0.6);backdrop-filter:blur(4px);box-shadow:0 8px 20px rgba(0,0,0,0.6);'; document.body.appendChild(el);
+      setTimeout(()=>el.style.opacity=0,1800); setTimeout(()=>el.remove(),2600);
+    }
+
+    document.getElementById('checkoutBtn').addEventListener('click',checkout)
+    document.getElementById('emptyCart').addEventListener('click',()=>{ if(confirm('Kosongkan keranjang?')){ emptyCart() } })
+    document.getElementById('clearStorage').addEventListener('click',()=>{ if(confirm('Reset semua data demo?')){ localStorage.removeItem(STORAGE_KEY); loadState(); renderProducts(); renderCart(); toast('Local demo direset') } })
+    document.getElementById('loadSample').addEventListener('click',()=>{ state.products = sampleProducts.slice(); saveState(); renderProducts(); toast('Sample products dimuat') })
+
+    loadState(); if(!state.products || state.products.length===0) state.products = sampleProducts.slice(); renderProducts(); renderCart();
+  </script>
+</body>
+</html>
+
+
+✅ File sudah diubah jadi TopUp Roblox B4rz: branding, produk Robux, dan form sudah menyesuaikan Roblox.
+
+Sekarang kamu bisa:
+
+Simpan file ini sebagai index.html
+
+Upload ke GitHub / hosting
+
+Aktifkan GitHub Pages untuk link publik
+
+
+Mau sekalian aku buatkan file README.md khusus untuk repo TopUp Roblox B4rz? (isi deskripsi, fitur, cara pakai).
+
