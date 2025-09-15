@@ -106,10 +106,10 @@
   <!-- Content -->
   <div class="container">
     <h2>Form Top Up</h2>
-    <form>
+    <form id="topupForm">
       <div class="form-group">
         <label for="username">Username Roblox</label>
-        <input type="text" id="username" name="username" placeholder="Masukkan username Roblox">
+        <input type="text" id="username" name="username" placeholder="Masukkan username Roblox" required>
       </div>
 
       <div class="form-group">
@@ -143,5 +143,28 @@
   <footer>
     &copy; 2025 TopUp Roblox B4rz. Semua Hak Dilindungi.
   </footer>
+
+  <!-- JavaScript -->
+  <script>
+    document.getElementById("topupForm").addEventListener("submit", function(e) {
+      e.preventDefault(); // biar gak reload halaman
+      const username = document.getElementById("username").value;
+      const jumlah = document.getElementById("jumlah").value;
+      const metode = document.getElementById("metode").value;
+
+      if(username === "") {
+        alert("Harap masukkan username Roblox terlebih dahulu!");
+        return;
+      }
+
+      alert(
+        "✅ Pesanan berhasil dibuat!\n\n" +
+        "👤 Username: " + username + "\n" +
+        "💎 Jumlah Robux: " + jumlah + "\n" +
+        "💳 Metode Pembayaran: " + metode + "\n\n" +
+        "Silakan selesaikan pembayaran sesuai metode yang dipilih."
+      );
+    });
+  </script>
 </body>
-  </html>
+</html>
